@@ -3,7 +3,6 @@ import os
 import warnings
 from docx import Document
 from transformers import BertTokenizer, BertForTokenClassification, pipeline
-from transformers import pipeline
 
 # 禁用 symlink 缓存警告
 os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
@@ -40,7 +39,11 @@ def split_text_with_ner(text, keywords):
     for sentence in sentences:
         if any(keyword in sentence for keyword in keywords):
             relevant_sentences.append(sentence.strip())
-    return relevant_sentences
+
+    # 对切割后的文本进行特殊符号和换行符号的剔除
+    cleaned_sentences = [s.replace('【', '').replace('】', '').replace('\n', '').strip() for s in relevant_sentences]
+
+    return cleaned_sentences
 
 
 def extract_information(sentences, keywords):
