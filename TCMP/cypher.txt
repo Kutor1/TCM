@@ -1,0 +1,48 @@
+// 1. 导入CSV文件，假设文件位于Neo4j导入目录中
+LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row
+
+// 2. 创建处方用名节点并生成唯一ID
+MERGE (处方用名节点:处方用名 {id: randomUUID(), name: row.处方用名, group: 'herb'})
+
+// 3. 创建来源节点并生成唯一ID
+MERGE (来源节点:来源 {id: randomUUID(), name: row.来源, group: 'source'})
+
+// 4. 创建炮制方法节点并生成唯一ID
+MERGE (炮制方法节点:炮制方法 {id: randomUUID(), name: row.炮制方法, group: 'method'})
+MERGE (处方用名节点)-[:link {type: '炮制方法'}]->(炮制方法节点)
+
+// 5. 创建质量要求节点并生成唯一ID
+MERGE (质量要求节点:质量要求 {id: randomUUID(), name: row.质量要求, group: 'quality'})
+MERGE (处方用名节点)-[:link {type: '质量要求'}]->(质量要求节点)
+
+// 6. 创建炮制作用节点并生成唯一ID
+MERGE (炮制作用节点:炮制作用 {id: randomUUID(), name: row.炮制作用, group: 'effect'})
+MERGE (处方用名节点)-[:link {type: '炮制作用'}]->(炮制作用节点)
+
+// 7. 创建炮制研究节点并生成唯一ID
+MERGE (炮制研究节点:炮制研究 {id: randomUUID(), name: row.炮制研究, group: 'research'})
+MERGE (处方用名节点)-[:link {type: '炮制研究'}]->(炮制研究节点)
+
+// 8. 创建贮存节点并生成唯一ID
+MERGE (贮存节点:贮存 {id: randomUUID(), name: row.贮存, group: 'storage'})
+MERGE (处方用名节点)-[:link {type: '贮存于'}]->(贮存节点)
+
+// 9. 创建处方用名与来源节点之间的关系
+MERGE (处方用名节点)-[:link {type: '来源于'}]->(来源节点)
+
+// 删除所有与处方用名相关的节点及其关系
+MATCH (n:处方用名)-[r]->()
+DELETE r, n
+
+// 删除所有与来源相关的节点及其关系
+MATCH (n:处方用名)-[r]->()
+DELETE r, n
+
+// 删除孤立的目标节点（如PreparationMethod、QualityRequirement、Function、Research、Storage等）
+MATCH (n:炮制作用) DELETE n
+MATCH (n:炮制方法) DELETE n
+MATCH (n:质量要求) DELETE n
+MATCH (n:来源) DELETE n
+MATCH (n:贮存) DELETE n
+
+npm i --save-dev @types/d3
